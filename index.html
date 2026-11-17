@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skala CRAVED – Ocena relacji z żywnością przetworzoną (UPF)</title>
+    <style>
+        :root {
+            --primary-color: #2e7d32;
+            --primary-light: #4caf50;
+            --bg-color: #f4f6f5;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-muted: #666666;
+            --border-color: #e0e0e0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px 24px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .header p {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 24px;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background-color: var(--border-color);
+            border-radius: 3px;
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: var(--primary-light);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .question-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .options-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn-option {
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-main);
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .btn-option:hover {
+            border-color: var(--primary-light);
+            background-color: #f1f8f2;
+        }
+
+        .btn-option.yes {
+            color: #d32f2f;
+            border-color: #ffcdd2;
+        }
+        .btn-option.yes:hover {
+            background-color: #ffebee;
+            border-color: #e57373;
+        }
+
+        .btn-option.no {
+            color: var(--primary-color);
+            border-color: #c8e6c9;
+        }
+        .btn-option.no:hover {
+            background-color: #e8f5e9;
+            border-color: #81c784;
+        }
+
+        .intro-text {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+        }
+
+        .btn-primary {
+            display: block;
+            width: 100%;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 16px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary:hover {
+            background-color: #235d27;
+        }
+
+        /* Summary styling */
+        .result-box {
+            text-align: center;
+            margin-bottom: 24px;
+            padding: 20px;
+            background: #f9fbf9;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .result-score {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 8px;
+        }
+
+        .result-desc {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text-main);
+        }
+
+        .recommendations {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+        }
+
+        .recommendations h3 {
+            color: var(--text-main);
+            font-size: 1rem;
+            margin-bottom: 8px;
+        }
+
+        .recommendations ul {
+            margin-left: 20px;
+            margin-top: 8px;
+        }
+
+        .recommendations li {
+            margin-bottom: 6px;
+        }
+
+        .footer-link {
+            text-align: center;
+            margin-top: 16px;
+        }
+
+        .footer-link a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .footer-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1>Test CRAVED</h1>
+            <p>Ocena zachowań wobec żywności wysoko przetworzonej (UPF)</p>
+        </div>
+
+        <div class="content">
+            
+            <!-- Ekran 0: Wstęp -->
+            <div id="screen-intro" class="screen active">
+                <p class="intro-text">
+                    Ten krótki, 6-pytaniowy test oparty na skali <strong>CRAVED</strong> pozwala ocenić, czy w ciągu ostatnich 12 miesięcy Twoja relacja z żywnością wysoko przetworzoną (słodycze, fast foody, słone przekąski, słodzone napoje) nosi cechy zachowań kompulsywnych lub uzależniających.
+                </p>
+                <button class="btn-primary" onclick="startQuiz()">Rozpocznij test (ok. 1 min)</button>
+            </div>
+
+            <!-- Ekrany 1-6: Pytania -->
+            <div id="quiz-container" class="screen">
+                <div class="progress-bar">
+                    <div id="progress-fill" class="progress-fill"></div>
+                </div>
+                <div id="question-text" class="question-title">Treść pytania pojawi się tutaj...</div>
+                <div class="options-group">
+                    <button class="btn-option yes" onclick="answerQuestion(1)">TAK (1 pkt)</button>
+                    <button class="btn-option no" onclick="answerQuestion(0)">NIE (0 pkt)</button>
+                </div>
+            </div>
+
+            <!-- Ekran Podsumowania -->
+            <div id="screen-summary" class="screen">
+                <div class="result-box">
+                    <div id="final-score" class="result-score">0 / 6</div>
+                    <div id="result-interpretation" class="result-desc">Analiza wyniku...</div>
+                </div>
+
+                <div class="recommendations" id="recommendations-box">
+                    <!-- Dynamiczne zalecenia -->
+                </div>
+
+                <a href="https://oktawianprzeliorzdietetyk.pl/" class="btn-primary" style="margin-bottom: 12px;">Wróć na stronę gabinetu</a>
+                <div class="footer-link">
+                    <a href="#" onclick="location.reload(); return false;">↺ Rozwiąż test ponownie</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            "C – Compulsion (Kompulsywność): Czy miewasz silne, trudne do opanowania pragnienie lub uporczywe myśli o jedzeniu konkretnych, wysoko przetworzonych produktów?",
+            "R – Reaching for more (Tolerancja): Czy odczuwasz potrzebę spożywania coraz większych ilości tego jedzenia, aby osiągnąć ten sam poziom satysfakcji lub poprawy nastroju?",
+            "A – Activities neglected (Zaniedbywanie aktywności): Czy zdarzyło Ci się rezygnować z ważnych spraw, spotkań lub obowiązków na rzecz zdobywania, jedzenia lub „dochodzenia do siebie” po epizodach objadania się?",
+            "V – Volume exceeded (Przekraczanie ilości): Czy zjadasz znacznie większe porcje lub przez dłuższy czas, niż pierwotnie planowałeś(-aś)?",
+            "E – Exclusion / Withdrawal (Objawy odstawienne): Czy po odstawieniu przetworzonej żywności odczuwasz dyskomfort psychiczny lub fizyczny (np. rozdrażnienie, spadek energii, bóle głowy), który mija po ponownym sięgnięciu po nią?",
+            "D – Damage despite awareness (Szkody pomimo świadomości): Czy kontynuujesz jedzenie tych produktów, mimo że wiesz, iż negatywnie wpływają na Twoje zdrowie, samopoczucie lub masę ciała?"
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+
+        function startQuiz() {
+            document.getElementById('screen-intro').classList.remove('active');
+            document.getElementById('quiz-container').classList.add('active');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            document.getElementById('question-text').innerText = questions[currentQuestion];
+            const progressPercentage = ((currentQuestion) / questions.length) * 100;
+            document.getElementById('progress-fill').style.width = progressPercentage + '%';
+        }
+
+        function answerQuestion(points) {
+            score += points;
+            currentQuestion++;
+
+            if (currentQuestion < questions.length) {
+                loadQuestion();
+            } else {
+                showSummary();
+            }
+        }
+
+        function showSummary() {
+            document.getElementById('quiz-container').classList.remove('active');
+            document.getElementById('screen-summary').classList.add('active');
+
+            document.getElementById('final-score').innerText = score + " / 6 pkt";
+
+            let interpretationText = "";
+            let recommendationsHTML = "";
+
+            if (score <= 1) {
+                interpretationText = "Brak wyraźnych cech uzależnienia od żywności przetworzonej.";
+                recommendationsHTML = `
+                    <h3>Co to oznacza?</h3>
+                    <p>Twoja relacja z żywnością wysoko przetworzoną mieści się w normie. Sporadyczne zachcianki są naturalnym elementem diety.</p>
+                    <ul>
+                        <li>Dbaj o regularne, zbilansowane posiłki bogate w białko i błonnik.</li>
+                        <li>Pozwalaj sobie na elastyczność w jadłospisie bez poczucia winy.</li>
+                    </ul>
+                `;
+            } else if (score === 2) {
+                interpretationText = "Strefa ostrzegawcza (podwyższona wrażliwość na UPF).";
+                recommendationsHTML = `
+                    <h3>Co to oznacza?</h3>
+                    <p>Zauważasz u siebie pewne sygnały utraty kontroli lub silnych zachcianek w stosunku do żywności przetworzonej.</p>
+                    <ul>
+                        <li>Zwróć uwagę na sytuacje wyzwalające (stres, zmęczenie, nuda), w których sięgasz po przekąski.</li>
+                        <li>Zadbaj o odpowiednią ilość snu i nawodnienie – ich brak nasila ochotę na szybką energię.</li>
+                    </ul>
+                `;
+            } else {
+                interpretationText = "Wysokie prawdopodobieństwo zachowań o charakterze uzależniającym.";
+                recommendationsHTML = `
+                    <h3>Co warto zrobić?</h3>
+                    <p>Wynik 3 lub więcej punktów wskazuje na silny mechanizm biologiczny i behawioralny związany z żywnością wysoko przetworzoną (próg kliniczny skali CRAVED).</p>
+                    <ul>
+                        <li><strong>Metoda małych kroków:</strong> Zamiast drastycznych głodówek, skup się na stopniowym ograniczaniu najbardziej problematycznych produktów.</li>
+                        <li><strong>Stabilizacja glikemii:</strong> Pilnuj białka i tłuszczów w głównych posiłkach, aby zmniejszyć nagłe skoki głodu wilczego.</li>
+                        <li><strong>Wsparcie specjalisty:</strong> Warto skonsultować ten wynik z dietetykiem klinicznym lub psychodietetykiem, aby bezpiecznie przepracować nawyki bez poczucia walki z wiatrakami.</li>
+                    </ul>
+                `;
+            }
+
+            document.getElementById('result-interpretation').innerText = interpretationText;
+            document.getElementById('recommendations-box').innerHTML = recommendationsHTML;
+        }
+    </script>
+</body>
+</html>
