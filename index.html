@@ -210,7 +210,7 @@
             display: block;
         }
 
-        /* Fale po bokach karty na komputerze z wolnym polem (ramką) wokół karty */
+        /* Nieskręcone fale po bokach karty na komputerze z wolnym polem (ramką) wokół karty */
         .desktop-waves {
             display: none;
         }
@@ -225,7 +225,7 @@
                 height: 520px;
                 pointer-events: none;
                 z-index: 1;
-                opacity: 0.82;
+                opacity: 0.85;
             }
 
             .desktop-waves.left {
@@ -627,20 +627,23 @@
             font-size: 0.84rem;
         }
 
-        .btn-share-main {
+        .btn-share-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 34px;
+            height: 34px;
             background: var(--accent-deep);
             color: #ffffff;
             border: none;
-            border-radius: 8px;
-            padding: 6px 12px;
-            font-size: 0.8rem;
-            font-weight: 700;
+            border-radius: 9px;
             cursor: pointer;
-            transition: background 0.16s ease;
+            transition: background 0.16s ease, transform 0.14s ease;
         }
 
-        .btn-share-main:hover {
+        .btn-share-icon:hover {
             background: var(--accent-hover);
+            transform: translateY(-1px);
         }
 
         .share-channels {
@@ -717,7 +720,7 @@
 </head>
 <body>
 
-    <!-- Fale po bokach karty na komputerach (z wolnym polem wokół karty, bez spirali, z luźnymi punktami) -->
+    <!-- Nieskręcone fale z luźnymi punktami po bokach karty na komputerze -->
     <svg id="waves-left" class="desktop-waves left" viewBox="0 0 290 520" fill="none" aria-hidden="true"></svg>
     <svg id="waves-right" class="desktop-waves right" viewBox="0 0 290 520" fill="none" aria-hidden="true"></svg>
 
@@ -858,7 +861,15 @@
             <div class="footer-share-box">
                 <div class="share-row">
                     <span class="share-label">Prześlij znajomym</span>
-                    <button type="button" class="btn-share-main" onclick="handleMainShare()">Share</button>
+                    <button type="button" class="btn-share-icon" onclick="handleMainShare()" aria-label="Udostępnij wynik" title="Udostępnij">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <circle cx="18" cy="5" r="3"></circle>
+                            <circle cx="6" cy="12" r="3"></circle>
+                            <circle cx="18" cy="19" r="3"></circle>
+                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                        </svg>
+                    </button>
                 </div>
                 <div id="share-channels" class="share-channels">
                     <a id="share-wa" class="share-chip" target="_blank" rel="noopener noreferrer">WhatsApp</a>
@@ -881,62 +892,70 @@
             </svg>
         `;
 
-        /* Same fale + luźne punkty, bez spirali */
-        function buildWavesOnlySvg(phaseShift = 0) {
-            let parts = [];
+        /* Nieskręcone, płynne fale biegnące równolegle w jednym kierunku + luźne punkty */
+        function buildSmoothParallelWavesSvg(phaseShift = 0) {
+            const parts = [];
+            const numWaves = 22;
+            const samples = 48;
+            const width = 290;
 
-            parts.push(`<line x1="8" y1="260" x2="282" y2="260" stroke="#4c8c2b" stroke-width="0.7" stroke-opacity="0.24"/>`);
+            /* Subtelna oś pozioma jak na wzorze[cite: 2] */
+            parts.push(`<line x1="6" y1="260" x2="284" y2="260" stroke="#4c8c2b" stroke-width="0.7" stroke-opacity="0.22"/>`);
 
-            const strands = 22;
-            for (let i = 0; i < strands; i++) {
-                const k = (i / (strands - 1)) - 0.5;
-                const spread = k * 44 + phaseShift;
+            for (let w = 0; w < numWaves; w++) {
+                const ratio = w / (numWaves - 1); /* 0..1 */
+                const centered = ratio - 0.5; /* -0.5..+0.5 */
+                const centerWeight = 1 - Math.abs(centered) * 1.45;
 
-                const startY = 260 + k * 56;
-                const cp1x = 85 + spread * 0.45;
-                const cp1y = 115 + k * 76;
-                const midX = 152;
-                const midY = 260 + k * 24;
-                const cp2x = 220 - spread * 0.35;
-                const cp2y = 405 - k * 68;
-                const endX = 286;
-                const endY = 232 + k * 84;
+                const baseY = 260 + centered * 92;
+                const amp = 44 + Math.max(0, centerWeight) * 34;
+                const freq = 0.023 + centered * 0.0025;
+                const phase = phaseShift * 0.14 + centered * 1.35;
 
-                const strokeColor = i % 3 === 0 ? "#2e6f40" : (i % 3 === 1 ? "#4c8c2b" : "#68b847");
-                const opacity = (0.2 + (1 - Math.abs(k) * 1.4) * 0.44).toFixed(2);
-                const width = Math.abs(k) < 0.12 ? "1.45" : "0.95";
+                let d = "";
+                for (let s = 0; s <= samples; s++) {
+                    const u = s / samples;
+                    const x = 4 + u * (width - 8);
+                    const envelope = 0.55 + 0.45 * Math.sin(u * Math.PI);
+                    const y = baseY + Math.sin(x * freq + phase) * amp * envelope;
+                    d += (s === 0 ? "M " : " L ") + `${x.toFixed(1)} ${y.toFixed(1)}`;
+                }
+
+                const strokeColor = w % 3 === 0 ? "#2e6f40" : (w % 3 === 1 ? "#4c8c2b" : "#68b847");
+                const opacity = (0.18 + Math.max(0, centerWeight) * 0.44).toFixed(2);
+                const strokeWidth = Math.abs(centered) < 0.12 ? "1.45" : "0.95";
 
                 parts.push(
-                    `<path d="M 4 ${startY} C ${cp1x} ${cp1y}, ${midX - 38} ${midY - 64}, ${midX} ${midY} C ${midX + 38} ${midY + 64}, ${cp2x} ${cp2y}, ${endX} ${endY}" stroke="${strokeColor}" stroke-width="${width}" stroke-opacity="${opacity}" fill="none"/>`
+                    `<path d="${d}" stroke="${strokeColor}" stroke-width="${strokeWidth}" stroke-opacity="${opacity}" fill="none" stroke-linecap="round"/>`
                 );
             }
 
-            /* Luźne punkty rozmieszczone między falami */
+            /* Luźne punkty jak na wzorze[cite: 2] */
             const dots = [
-                { cx: 48, cy: 132, r: 2.2, c: "#4c8c2b", o: 0.45 },
-                { cx: 92, cy: 178, r: 1.7, c: "#2e6f40", o: 0.38 },
-                { cx: 136, cy: 112, r: 2.4, c: "#68b847", o: 0.46 },
-                { cx: 178, cy: 154, r: 1.8, c: "#2e6f40", o: 0.36 },
-                { cx: 224, cy: 126, r: 2.3, c: "#4c8c2b", o: 0.44 },
-                { cx: 256, cy: 192, r: 1.9, c: "#68b847", o: 0.42 },
-                { cx: 64, cy: 342, r: 2.1, c: "#2e6f40", o: 0.4 },
-                { cx: 112, cy: 388, r: 2.4, c: "#4c8c2b", o: 0.46 },
-                { cx: 162, cy: 356, r: 1.6, c: "#68b847", o: 0.35 },
-                { cx: 204, cy: 408, r: 2.2, c: "#2e6f40", o: 0.42 },
-                { cx: 248, cy: 334, r: 1.8, c: "#4c8c2b", o: 0.38 },
-                { cx: 34, cy: 232, r: 1.5, c: "#4c8c2b", o: 0.32 }
+                { cx: 42, cy: 138, r: 2.2, c: "#4c8c2b", o: 0.46 },
+                { cx: 88, cy: 174, r: 1.7, c: "#2e6f40", o: 0.38 },
+                { cx: 134, cy: 118, r: 2.4, c: "#68b847", o: 0.48 },
+                { cx: 176, cy: 162, r: 1.8, c: "#2e6f40", o: 0.36 },
+                { cx: 222, cy: 134, r: 2.2, c: "#4c8c2b", o: 0.44 },
+                { cx: 258, cy: 196, r: 1.9, c: "#68b847", o: 0.42 },
+                { cx: 58, cy: 344, r: 2.1, c: "#2e6f40", o: 0.42 },
+                { cx: 108, cy: 386, r: 2.4, c: "#4c8c2b", o: 0.46 },
+                { cx: 158, cy: 352, r: 1.6, c: "#68b847", o: 0.36 },
+                { cx: 206, cy: 398, r: 2.2, c: "#2e6f40", o: 0.42 },
+                { cx: 248, cy: 332, r: 1.8, c: "#4c8c2b", o: 0.38 },
+                { cx: 28, cy: 228, r: 1.5, c: "#4c8c2b", o: 0.32 }
             ];
 
-            dots.forEach((d) => {
-                parts.push(`<circle cx="${d.cx}" cy="${d.cy}" r="${d.r}" fill="${d.c}" fill-opacity="${d.o}"/>`);
+            dots.forEach((pt) => {
+                parts.push(`<circle cx="${pt.cx}" cy="${pt.cy}" r="${pt.r}" fill="${pt.c}" fill-opacity="${pt.o}"/>`);
             });
 
             return parts.join("");
         }
 
         function updateDesktopWaves(stepIndex = 0) {
-            const shift = (stepIndex - 2.5) * 3.5;
-            const content = buildWavesOnlySvg(shift);
+            const shift = (stepIndex - 2.5) * 3.2;
+            const content = buildSmoothParallelWavesSvg(shift);
             document.getElementById("waves-left").innerHTML = content;
             document.getElementById("waves-right").innerHTML = content;
         }
