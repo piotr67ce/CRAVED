@@ -20,6 +20,7 @@
             --warn-soft: #fdf5e6;
             --alert: #b83227;
             --alert-soft: #fceceb;
+            --wave-gap: 16px;
         }
 
         * {
@@ -209,18 +210,18 @@
             display: block;
         }
 
-        /* Rozbudowane fale i spirale po lewej i prawej stronie na kompach (pod spodem / w tle obok pola tekstowego) */
+        /* Fale po bokach karty na komputerze z wolnym polem (ramką) wokół karty */
         .desktop-waves {
             display: none;
         }
 
-        @media (min-width: 960px) {
+        @media (min-width: 1120px) {
             .desktop-waves {
                 display: block;
                 position: fixed;
                 top: 50%;
                 transform: translateY(-50%);
-                width: 340px;
+                width: min(290px, calc(50vw - 300px - var(--wave-gap) - 8px));
                 height: 520px;
                 pointer-events: none;
                 z-index: 1;
@@ -228,11 +229,11 @@
             }
 
             .desktop-waves.left {
-                left: max(6px, calc(50% - 610px));
+                right: calc(50% + 300px + var(--wave-gap));
             }
 
             .desktop-waves.right {
-                right: max(6px, calc(50% - 610px));
+                left: calc(50% + 300px + var(--wave-gap));
                 transform: translateY(-50%) scaleX(-1);
             }
         }
@@ -583,19 +584,21 @@
             border-top: 1px solid var(--border-subtle);
             padding: 11px 20px;
             text-align: center;
-            font-size: 0.74rem;
+            font-size: 0.78rem;
             color: var(--ink-muted);
             line-height: 1.4;
             border-radius: 0 0 18px 18px;
             z-index: 2;
         }
 
-        .footer-quiz-action {
+        .footer-credits-text,
+        .footer-quiz-action,
+        .footer-share-box {
             display: none;
         }
 
-        .app-shell.quiz-active .footer-credits-text {
-            display: none;
+        .app-shell:not(.quiz-active):not(.result-active) .footer-credits-text {
+            display: inline;
         }
 
         .app-shell.quiz-active .footer-quiz-action {
@@ -604,6 +607,79 @@
 
         .app-shell.quiz-active .credits-footer {
             padding: 7px 20px;
+        }
+
+        .app-shell.result-active .footer-share-box {
+            display: block;
+        }
+
+        .share-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .share-label {
+            font-weight: 700;
+            color: var(--ink-main);
+            font-size: 0.84rem;
+        }
+
+        .btn-share-main {
+            background: var(--accent-deep);
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.16s ease;
+        }
+
+        .btn-share-main:hover {
+            background: var(--accent-hover);
+        }
+
+        .share-channels {
+            display: none;
+            margin-top: 9px;
+            gap: 6px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .share-channels.open {
+            display: flex;
+        }
+
+        .share-chip {
+            text-decoration: none;
+            background: #ffffff;
+            color: var(--ink-main);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 5px 9px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: border-color 0.15s ease, background 0.15s ease;
+        }
+
+        .share-chip:hover {
+            background: var(--accent-soft);
+            border-color: var(--accent-deep);
+            color: var(--accent-deep);
+        }
+
+        .share-status {
+            margin-top: 6px;
+            font-size: 0.74rem;
+            color: var(--accent-deep);
+            font-weight: 600;
+            min-height: 1em;
         }
 
         @media (max-width: 500px) {
@@ -641,9 +717,9 @@
 </head>
 <body>
 
-    <!-- Rozbudowany wykres wielu krzywych i spirali po lewej i prawej stronie na kompach -->
-    <svg id="waves-left" class="desktop-waves left" viewBox="0 0 340 520" fill="none" aria-hidden="true"></svg>
-    <svg id="waves-right" class="desktop-waves right" viewBox="0 0 340 520" fill="none" aria-hidden="true"></svg>
+    <!-- Fale po bokach karty na komputerach (z wolnym polem wokół karty, bez spirali, z luźnymi punktami) -->
+    <svg id="waves-left" class="desktop-waves left" viewBox="0 0 290 520" fill="none" aria-hidden="true"></svg>
+    <svg id="waves-right" class="desktop-waves right" viewBox="0 0 290 520" fill="none" aria-hidden="true"></svg>
 
     <main id="app-shell" class="app-shell">
         <header class="hero">
@@ -778,6 +854,22 @@
                 Skala CRAVED: <strong>dr Jen Unwin</strong> i <strong>Heidi Giaever</strong> we współpracy z <strong>The Collaborative Health Community Foundation</strong>.
             </span>
             <button type="button" class="btn-link footer-quiz-action" onclick="restartQuiz()">Zacznij od nowa</button>
+
+            <div class="footer-share-box">
+                <div class="share-row">
+                    <span class="share-label">Prześlij znajomym</span>
+                    <button type="button" class="btn-share-main" onclick="handleMainShare()">Share</button>
+                </div>
+                <div id="share-channels" class="share-channels">
+                    <a id="share-wa" class="share-chip" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+                    <a id="share-fb" class="share-chip" target="_blank" rel="noopener noreferrer">Facebook</a>
+                    <a id="share-msg" class="share-chip" target="_blank" rel="noopener noreferrer">Messenger</a>
+                    <a id="share-tg" class="share-chip" target="_blank" rel="noopener noreferrer">Telegram</a>
+                    <a id="share-x" class="share-chip" target="_blank" rel="noopener noreferrer">X</a>
+                    <button type="button" class="share-chip" onclick="copyShareLink()">Kopiuj link</button>
+                </div>
+                <div id="share-status" class="share-status"></div>
+            </div>
         </footer>
     </main>
 
@@ -789,83 +881,62 @@
             </svg>
         `;
 
-        /* Rozbudowana kompozycja fal i spirali inspirowana załączoną grafiką */
-        function buildSpiralWaveSvg(phaseShift = 0) {
-            let svgParts = [];
+        /* Same fale + luźne punkty, bez spirali */
+        function buildWavesOnlySvg(phaseShift = 0) {
+            let parts = [];
 
-            /* Centralna oś i drobne pionowe znaczniki w tle */
-            svgParts.push(`<line x1="0" y1="260" x2="340" y2="260" stroke="#4c8c2b" stroke-width="0.7" stroke-opacity="0.28"/>`);
-            for (let gx = 24; gx < 330; gx += 28) {
-                svgParts.push(`<line x1="${gx}" y1="226" x2="${gx}" y2="294" stroke="#2e6f40" stroke-width="0.6" stroke-opacity="0.2"/>`);
-            }
+            parts.push(`<line x1="8" y1="260" x2="282" y2="260" stroke="#4c8c2b" stroke-width="0.7" stroke-opacity="0.24"/>`);
 
-            /* Pakiet falujących krzywych przechodzących w spirale */
-            const strands = 24;
+            const strands = 22;
             for (let i = 0; i < strands; i++) {
-                const k = (i / (strands - 1)) - 0.5; /* -0.5 .. +0.5 */
-                const spread = k * 46 + phaseShift;
+                const k = (i / (strands - 1)) - 0.5;
+                const spread = k * 44 + phaseShift;
 
-                const startY = 260 + k * 54;
-                const cp1x = 95 + spread * 0.4;
-                const cp1y = 110 + k * 72;
-                const midX = 175;
-                const midY = 260 + k * 28;
-                const cp2x = 255 - spread * 0.35;
-                const cp2y = 405 - k * 64;
-                const endX = 335;
-                const endY = 235 + k * 82;
+                const startY = 260 + k * 56;
+                const cp1x = 85 + spread * 0.45;
+                const cp1y = 115 + k * 76;
+                const midX = 152;
+                const midY = 260 + k * 24;
+                const cp2x = 220 - spread * 0.35;
+                const cp2y = 405 - k * 68;
+                const endX = 286;
+                const endY = 232 + k * 84;
 
                 const strokeColor = i % 3 === 0 ? "#2e6f40" : (i % 3 === 1 ? "#4c8c2b" : "#68b847");
-                const opacity = (0.22 + (1 - Math.abs(k) * 1.4) * 0.45).toFixed(2);
+                const opacity = (0.2 + (1 - Math.abs(k) * 1.4) * 0.44).toFixed(2);
                 const width = Math.abs(k) < 0.12 ? "1.45" : "0.95";
 
-                svgParts.push(
-                    `<path d="M -5 ${startY} C ${cp1x} ${cp1y}, ${midX - 45} ${midY - 68}, ${midX} ${midY} C ${midX + 45} ${midY + 68}, ${cp2x} ${cp2y}, ${endX} ${endY}" stroke="${strokeColor}" stroke-width="${width}" stroke-opacity="${opacity}" fill="none"/>`
+                parts.push(
+                    `<path d="M 4 ${startY} C ${cp1x} ${cp1y}, ${midX - 38} ${midY - 64}, ${midX} ${midY} C ${midX + 38} ${midY + 64}, ${cp2x} ${cp2y}, ${endX} ${endY}" stroke="${strokeColor}" stroke-width="${width}" stroke-opacity="${opacity}" fill="none"/>`
                 );
             }
 
-            /* Spirale po lewej i prawej stronie kompozycji */
-            const spirals = [
-                { cx: 118, cy: 215, maxR: 54, turns: 2.3, color: "#4c8c2b", opacity: "0.52" },
-                { cx: 238, cy: 305, maxR: 62, turns: 2.5, color: "#2e6f40", opacity: "0.55" }
+            /* Luźne punkty rozmieszczone między falami */
+            const dots = [
+                { cx: 48, cy: 132, r: 2.2, c: "#4c8c2b", o: 0.45 },
+                { cx: 92, cy: 178, r: 1.7, c: "#2e6f40", o: 0.38 },
+                { cx: 136, cy: 112, r: 2.4, c: "#68b847", o: 0.46 },
+                { cx: 178, cy: 154, r: 1.8, c: "#2e6f40", o: 0.36 },
+                { cx: 224, cy: 126, r: 2.3, c: "#4c8c2b", o: 0.44 },
+                { cx: 256, cy: 192, r: 1.9, c: "#68b847", o: 0.42 },
+                { cx: 64, cy: 342, r: 2.1, c: "#2e6f40", o: 0.4 },
+                { cx: 112, cy: 388, r: 2.4, c: "#4c8c2b", o: 0.46 },
+                { cx: 162, cy: 356, r: 1.6, c: "#68b847", o: 0.35 },
+                { cx: 204, cy: 408, r: 2.2, c: "#2e6f40", o: 0.42 },
+                { cx: 248, cy: 334, r: 1.8, c: "#4c8c2b", o: 0.38 },
+                { cx: 34, cy: 232, r: 1.5, c: "#4c8c2b", o: 0.32 }
             ];
 
-            spirals.forEach((sp, sIdx) => {
-                for (let layer = 0; layer < 5; layer++) {
-                    const scale = 0.72 + layer * 0.11;
-                    let d = "";
-                    const steps = 64;
-                    for (let step = 0; step <= steps; step++) {
-                        const t = step / steps;
-                        const angle = t * sp.turns * Math.PI * 2 + layer * 0.18 + phaseShift * 0.02 * (sIdx === 0 ? 1 : -1);
-                        const r = t * sp.maxR * scale;
-                        const x = sp.cx + Math.cos(angle) * r;
-                        const y = sp.cy + Math.sin(angle) * r;
-                        d += (step === 0 ? "M " : " L ") + `${x.toFixed(1)} ${y.toFixed(1)}`;
-                    }
-                    svgParts.push(
-                        `<path d="${d}" stroke="${sp.color}" stroke-width="${layer === 2 ? "1.3" : "0.85"}" stroke-opacity="${sp.opacity}" fill="none"/>`
-                    );
-                }
+            dots.forEach((d) => {
+                parts.push(`<circle cx="${d.cx}" cy="${d.cy}" r="${d.r}" fill="${d.c}" fill-opacity="${d.o}"/>`);
             });
 
-            /* Drobne punkty i kwadraciki dekoracyjne */
-            const accents = [
-                `<circle cx="64" cy="142" r="2.2" fill="#4c8c2b" fill-opacity="0.45"/>`,
-                `<circle cx="192" cy="128" r="1.8" fill="#2e6f40" fill-opacity="0.4"/>`,
-                `<circle cx="284" cy="186" r="2.5" fill="#68b847" fill-opacity="0.45"/>`,
-                `<circle cx="152" cy="396" r="2" fill="#2e6f40" fill-opacity="0.4"/>`,
-                `<rect x="86" y="344" width="6" height="6" fill="#4c8c2b" fill-opacity="0.32"/>`,
-                `<rect x="262" y="138" width="5" height="5" fill="#2e6f40" fill-opacity="0.3"/>`
-            ];
-            svgParts.push(...accents);
-
-            return svgParts.join("");
+            return parts.join("");
         }
 
         function updateDesktopWaves(stepIndex = 0) {
             const shift = (stepIndex - 2.5) * 3.5;
-            const content = buildSpiralWaveSvg(shift);
+            const content = buildWavesOnlySvg(shift);
             document.getElementById("waves-left").innerHTML = content;
             document.getElementById("waves-right").innerHTML = content;
         }
@@ -1017,6 +1088,7 @@
             } else if (mode === "result") {
                 shell.classList.add("result-active", "three-zone-hero");
                 leftSlot.innerHTML = simpleSineSvg;
+                setupShareLinks();
                 updateDesktopWaves(6);
             } else {
                 leftSlot.innerHTML = "";
@@ -1103,6 +1175,64 @@
             startQuiz();
         }
 
+        function getSharePayload() {
+            const totalScore = currentScore();
+            const shareUrl = window.location.href.startsWith("http")
+                ? window.location.href
+                : "https://oktawianprzeliorzdietetyk.pl/";
+            const text = `Mój wynik w teście CRAVED (nawyków wobec żywności wysoko przetworzonej): ${totalScore}/6 pkt. Sprawdź swój wynik:`;
+            return { title: "Test CRAVED – Dietetyk", text, url: shareUrl };
+        }
+
+        function setupShareLinks() {
+            const { text, url } = getSharePayload();
+            const encText = encodeURIComponent(`${text} ${url}`);
+            const encUrl = encodeURIComponent(url);
+            const encOnlyText = encodeURIComponent(text);
+
+            document.getElementById("share-wa").href = `https://wa.me/?text=${encText}`;
+            document.getElementById("share-fb").href = `https://www.facebook.com/sharer/sharer.php?u=${encUrl}&quote=${encOnlyText}`;
+            document.getElementById("share-msg").href = `https://www.facebook.com/dialog/send?link=${encUrl}&app_id=291494419107518&redirect_uri=${encUrl}`;
+            document.getElementById("share-tg").href = `https://t.me/share/url?url=${encUrl}&text=${encOnlyText}`;
+            document.getElementById("share-x").href = `https://twitter.com/intent/tweet?text=${encOnlyText}&url=${encUrl}`;
+            document.getElementById("share-status").textContent = "";
+        }
+
+        async function handleMainShare() {
+            const payload = getSharePayload();
+            const channelsEl = document.getElementById("share-channels");
+            const statusEl = document.getElementById("share-status");
+
+            if (navigator.share) {
+                try {
+                    await navigator.share(payload);
+                    statusEl.textContent = "Udostępniono.";
+                    return;
+                } catch (err) {
+                    if (err && err.name === "AbortError") {
+                        statusEl.textContent = "Udostępnianie anulowane.";
+                        return;
+                    }
+                }
+            }
+
+            channelsEl.classList.toggle("open");
+            statusEl.textContent = channelsEl.classList.contains("open") ? "Wybierz kanał wysyłki:" : "";
+        }
+
+        async function copyShareLink() {
+            const { text, url } = getSharePayload();
+            const fullShare = `${text} ${url}`;
+            const statusEl = document.getElementById("share-status");
+
+            try {
+                await navigator.clipboard.writeText(fullShare);
+                statusEl.textContent = "Skopiowano link do schowka.";
+            } catch (e) {
+                statusEl.textContent = fullShare;
+            }
+        }
+
         function renderResult() {
             const totalScore = currentScore();
             const data = outcomes[totalScore];
@@ -1143,6 +1273,7 @@
 
             document.getElementById("cta-title").textContent = data.ctaTitle;
             document.getElementById("cta-text").textContent = data.ctaText;
+            setupShareLinks();
         }
 
         updateDesktopWaves(0);
