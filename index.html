@@ -62,6 +62,7 @@
 
         .hero-main {
             min-width: 0;
+            flex: 1;
         }
 
         .hero-badge-row {
@@ -86,6 +87,80 @@
             font-size: 0.84rem;
             opacity: 0.9;
             line-height: 1.35;
+        }
+
+        /* Widok lewej strony banera w trakcie pytań */
+        .hero-step-view {
+            display: none;
+        }
+
+        .app-shell.quiz-active .hero-intro-view {
+            display: none;
+        }
+
+        .app-shell.quiz-active .hero-step-view {
+            display: block;
+        }
+
+        .craved-letters {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+            margin-bottom: 6px;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+        }
+
+        .craved-letter {
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.52);
+            transition: all 0.2s ease;
+            line-height: 1;
+        }
+
+        .craved-letter.active {
+            font-size: 1.55rem;
+            color: #ffffff;
+            background: rgba(216, 243, 198, 0.22);
+            border: 1px solid rgba(216, 243, 198, 0.55);
+            border-radius: 8px;
+            padding: 2px 7px;
+            line-height: 1.1;
+        }
+
+        .step-detail {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .step-icon-badge {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.14);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .step-titles {
+            min-width: 0;
+        }
+
+        .step-en {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #ffffff;
+            line-height: 1.2;
+        }
+
+        .step-pl {
+            font-size: 0.8rem;
+            color: #d8f3c6;
+            line-height: 1.25;
         }
 
         /* Kadrowanie logo: ukrywa górną część, zostawia awokado i wszystko niżej */
@@ -445,6 +520,7 @@
             color: var(--ink-main);
         }
 
+        /* Stopka: pełna na starcie/wyniku, węższa z "Zacznij od nowa" na pytaniach */
         .credits-footer {
             background: var(--bg-soft);
             border-top: 1px solid var(--border-subtle);
@@ -453,6 +529,22 @@
             font-size: 0.74rem;
             color: var(--ink-muted);
             line-height: 1.4;
+        }
+
+        .footer-quiz-action {
+            display: none;
+        }
+
+        .app-shell.quiz-active .footer-credits-text {
+            display: none;
+        }
+
+        .app-shell.quiz-active .footer-quiz-action {
+            display: inline-block;
+        }
+
+        .app-shell.quiz-active .credits-footer {
+            padding: 7px 20px;
         }
 
         @media (max-width: 500px) {
@@ -484,14 +576,29 @@
 </head>
 <body>
 
-    <main class="app-shell">
+    <main id="app-shell" class="app-shell">
         <header class="hero">
             <div class="hero-main">
-                <div class="hero-badge-row">
-                    <span>Dietetyk Żory</span>
+                <!-- Lewa strona banera na ekranie startowym i wyniku -->
+                <div class="hero-intro-view">
+                    <div class="hero-badge-row">
+                        <span>Dietetyk Żory</span>
+                    </div>
+                    <h1>Test CRAVED</h1>
+                    <p>Ocena nawyków wobec żywności wysoko przetworzonej (UPF)</p>
                 </div>
-                <h1>Test CRAVED</h1>
-                <p>Ocena nawyków wobec żywności wysoko przetworzonej (UPF)</p>
+
+                <!-- Lewa strona banera podczas pytań: wyróżniona litera CRAVED + ikona + EN i PL -->
+                <div class="hero-step-view">
+                    <div id="craved-letters" class="craved-letters" aria-hidden="true"></div>
+                    <div class="step-detail">
+                        <div id="step-icon-badge" class="step-icon-badge" aria-hidden="true"></div>
+                        <div class="step-titles">
+                            <div id="step-en" class="step-en"></div>
+                            <div id="step-pl" class="step-pl"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="logo-crop-box" aria-label="Logo Oktawian Przeliorz Dietetyk">
@@ -592,34 +699,61 @@
         </div>
 
         <footer class="credits-footer">
-            Skala CRAVED: <strong>dr Jen Unwin</strong> i <strong>Heidi Giaever</strong> we współpracy z <strong>The Collaborative Health Community Foundation</strong>.
+            <span class="footer-credits-text">
+                Skala CRAVED: <strong>dr Jen Unwin</strong> i <strong>Heidi Giaever</strong> we współpracy z <strong>The Collaborative Health Community Foundation</strong>.
+            </span>
+            <button type="button" class="btn-link footer-quiz-action" onclick="restartQuiz()">Zacznij od nowa</button>
         </footer>
     </main>
 
     <script>
         const questions = [
             {
-                tag: "C • Compulsion (Kompulsywność)",
+                letter: "C",
+                en: "Compulsion",
+                pl: "Nieodparty przymus",
+                tag: "C • Nieodparty przymus",
+                icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c2.5 3.5 5 5.8 5 9.5a5 5 0 0 1-10 0c0-2.2 1.2-4.2 2.5-5.8.2 1.6 1.2 2.3 2.5 2.3 0-2.2 0-4 0-6z"/></svg>`,
                 text: "Czy w ciągu ostatnich 12 miesięcy miewałeś(-aś) silne, trudne do opanowania pragnienie lub natrętne myśli o zjedzeniu konkretnych produktów wysoko przetworzonych?"
             },
             {
-                tag: "R • Reaching for more (Tolerancja)",
+                letter: "R",
+                en: "Reaching for more",
+                pl: "Chęć na więcej",
+                tag: "R • Chęć na więcej",
+                icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V6"/><path d="m6 12 6-6 6 6"/><path d="M5 20h14"/></svg>`,
                 text: "Czy zauważasz, że potrzebujesz coraz większych porcji żywności przetworzonej, aby uzyskać ten sam poziom przyjemności, sytości lub poprawy nastroju?"
             },
             {
-                tag: "A • Activities neglected (Zaniedbywanie aktywności)",
+                letter: "A",
+                en: "Activities neglected",
+                pl: "Zaniedbanie innych spraw",
+                tag: "A • Zaniedbanie innych spraw",
+                icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12"/><path d="M6 22h12"/><path d="M8 2v4c0 3 4 4 4 6s-4 3-4 6v4"/><path d="M16 2v4c0 3-4 4-4 6s4 3 4 6v4"/></svg>`,
                 text: "Czy zdarzało Ci się odkładać ważne sprawy, spotkania lub obowiązki przez zdobywanie, jedzenie przetworzonej żywności albo regenerację po jej nadmiarze?"
             },
             {
-                tag: "V • Volume exceeded (Przekraczanie ilości)",
+                letter: "V",
+                en: "Volume exceeded",
+                pl: "Jedzenie ponad plan",
+                tag: "V • Jedzenie ponad plan",
+                icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11h16a8 8 0 0 1-16 0z"/><path d="M7 7c1.5-1.5 3.5-1.5 5 0s3.5 1.5 5 0"/><path d="M12 19v3"/><path d="M8 22h8"/></svg>`,
                 text: "Czy często zjadasz znacznie więcej takiej żywności lub jesz ją dłużej, niż początkowo zakładałeś(-aś)?"
             },
             {
-                tag: "E • Exclusion / Withdrawal (Objawy odstawienne)",
+                letter: "E",
+                en: "Exclusion / Withdrawal",
+                pl: "Objawy odstawienia",
+                tag: "E • Objawy odstawienia",
+                icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c-4.5 5.6-7 9-7 12.3a7 7 0 0 0 14 0C19 12 16.5 8.6 12 3z"/></svg>`,
                 text: "Czy po ograniczeniu lub odstawieniu żywności wysoko przetworzonej pojawia się u Ciebie rozdrażnienie, spadek energii, niepokój lub inny dyskomfort, który ustępuje po ponownym sięgnięciu po te produkty?"
             },
             {
-                tag: "D • Damage despite awareness (Szkody pomimo świadomości)",
+                letter: "D",
+                en: "Damage despite awareness",
+                pl: "Szkody mimo wiedzy",
+                tag: "D • Szkody mimo wiedzy",
+                icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V10"/><path d="M12 10c0-4-3.5-6-7-5"/><path d="M12 13c0-3 3.5-5 7-4"/><path d="M4 22h16"/></svg>`,
                 text: "Czy kontynuujesz jedzenie tych produktów, mimo świadomości, że odbija się to niekorzystnie na Twoim zdrowiu, samopoczuciu, śnie lub masie ciała?"
             }
         ];
@@ -629,191 +763,4 @@
                 tier: "low",
                 badge: "0 / 6 pkt • Brak cech uzależnienia",
                 heading: "Stabilna relacja z żywnością wysoko przetworzoną",
-                analysis: "Wynik 0 punktów oznacza, że w badanych obszarach nie występują sygnały kompulsywności ani utraty kontroli nad spożyciem żywności wysoko przetworzonej.",
-                tips: [
-                    "Utrzymuj regularny rytm posiłków oparty na pełnowartościowych produktach.",
-                    "Zachowuj elastyczność żywieniową – okazjonalne sięgnięcie po ulubiony deser czy przekąskę nie zaburza zdrowego bilansu."
-                ],
-                ctaTitle: "Chcesz jeszcze lepiej dopasować jadłospis do swojego trybu życia?",
-                ctaText: "Nawet przy bardzo dobrych nawykach warto czasem uporządkować codzienne menu pod kątem energii i profilaktyki. Zajrzyj na stronę gabinetu i sprawdź, jak mogę Ci pomóc."
-            },
-            1: {
-                tier: "low",
-                badge: "1 / 6 pkt • Bardzo niskie ryzyko",
-                heading: "Niewielki sygnał – w pełni pod kontrolą",
-                analysis: "Jeden punkt wskazuje na pojedynczy, incydentalny obszar, który warto obserwować, ale całościowo Twój wzorzec zachowań pozostaje zrównoważony.",
-                tips: [
-                    "Zwróć uwagę na konkretne sytuacje (np. pośpiech lub późny wieczór), w których pojawił się ten jeden sygnał.",
-                    "Dbaj o odpowiednie nawodnienie oraz pełnowartościowe śniadania i obiady."
-                ],
-                ctaTitle: "Masz pojedyncze pytanie dotyczące diety lub samopoczucia?",
-                ctaText: "Drobne korekty w codziennym odżywianiu potrafią przynieść zauważalną lekkość i stabilną energię. Odwiedź stronę gabinetu i skontaktuj się z dietetykiem."
-            },
-            2: {
-                tier: "mid",
-                badge: "2 / 6 pkt • Strefa ostrzegawcza",
-                heading: "Podwyższona wrażliwość na żywność przetworzoną",
-                analysis: "Wynik 2 punktów to jeszcze poniżej progu klinicznego skali CRAVED, ale stanowi wyraźny sygnał ostrzegawczy, że niektóre bodźce lub porcje zaczynają działać mocniej niż dotychczas.",
-                tips: [
-                    "Obserwuj wyzwalacze takie jak stres, przemęczenie, brak snu czy długa przerwa między posiłkami.",
-                    "Zadbaj o odpowiednią podaż białka i błonnika w ciągu dnia, aby ograniczyć nagłe spadki sytości."
-                ],
-                ctaTitle: "Zatrzymaj ten trend zanim przerodzi się w trudniejszy nawyk",
-                ctaText: "Wczesna reakcja na poziomie dwóch punktów jest najłatwiejsza i najbardziej skuteczna. Wejdź na stronę gabinetu i umów rozmowę, aby wspólnie ułożyć spokojny plan działania."
-            },
-            3: {
-                tier: "high",
-                badge: "3 / 6 pkt • Próg kliniczny osiągnięty",
-                heading: "Wyraźne cechy zachowań o charakterze uzależniającym",
-                analysis: "Osiągnięcie 3 punktów oznacza przekroczenie progu skali CRAVED – w Twoich zachowaniach wobec żywności wysoko przetworzonej widać już powtarzalny mechanizm silnego przyciągania lub trudności z zatrzymaniem się.",
-                tips: [
-                    "Zrezygnuj z restrykcyjnych zakazów „od jutra”, które często nasilają presję i kolejne epizody.",
-                    "Wprowadzaj zmiany stopniowo, koncentrując się na najczęstszych momentach utraty kontroli."
-                ],
-                ctaTitle: "Nie musisz walczyć z tym samodzielnie",
-                ctaText: "Przy wyniku 3 punktów profesjonalne wsparcie pozwala szybko wyjść z cyklu „zakaz – pokusa – wyrzuty sumienia”. Przejdź na stronę gabinetu i sprawdź możliwości konsultacji."
-            },
-            4: {
-                tier: "high",
-                badge: "4 / 6 pkt • Podwyższone nasilenie",
-                heading: "Silny wpływ żywności przetworzonej na codzienne wybory",
-                analysis: "Cztery punkty wskazują, że żywność wysoko przetworzona odgrywa istotną, często trudną do samodzielnego wyregulowania rolę w Twoim codziennym funkcjonowaniu i reagowaniu na emocje lub zmęczenie.",
-                tips: [
-                    "Oddziel głód fizjologiczny od jedzenia pod wpływem napięcia, nudy lub wyczerpania.",
-                    "Zadbaj o przewidywalną strukturę dnia i posiłków, aby ograniczyć decyzje podejmowane „w biegu”."
-                ],
-                ctaTitle: "Warto oprzeć zmianę na sprawdzonym planie",
-                ctaText: "Gdy nawyki są mocno utrwalone, sama silna wola rzadko wystarcza na długo. Wejdź na stronę gabinetu i skontaktuj się, aby dobrać bezpieczną strategię dopasowaną do Ciebie."
-            },
-            5: {
-                tier: "high",
-                badge: "5 / 6 pkt • Wysokie nasilenie",
-                heading: "Bardzo wyraźne objawy kompulsywnego sięgania po UPF",
-                analysis: "Wynik 5 punktów oznacza, że większość mechanizmów ocenianych w skali CRAVED jest u Ciebie aktywna – zarówno w sferze pragnień, jak i ilości, reakcji na ograniczenia czy konsekwencji odczuwanych na co dzień.",
-                tips: [
-                    "Skup się na odbudowie podstaw: regularnego jedzenia, snu i realnego odpoczynku poza talerzem.",
-                    "Unikaj skrajnych diet redukcyjnych, które mogą wzmacniać objawy odstawienne i chęć nadrobienia braków."
-                ],
-                ctaTitle: "Zrób pierwszy krok z doświadczonym specjalistą",
-                ctaText: "Przy tak wysokim wyniku uporządkowanie relacji z jedzeniem krok po kroku daje znacznie lepsze i trwalsze efekty niż kolejne próby na własną rękę. Odwiedź stronę gabinetu i umów kontakt."
-            },
-            6: {
-                tier: "high",
-                badge: "6 / 6 pkt • Maksymalny wynik w skali",
-                heading: "Pełny profil zachowań charakterystycznych dla skali CRAVED",
-                analysis: "Wynik 6 na 6 punktów oznacza, że potwierdziłeś(-aś) wszystkie sześć obszarów skali – silne pragnienia, rosnącą tolerancję, przekraczanie ilości, dyskomfort przy ograniczaniu, wpływ na inne sprawy oraz dalsze jedzenie mimo świadomości skutków.",
-                tips: [
-                    "Potraktuj ten wynik jako rzetelną informację diagnostyczną, a nie powód do samokrytyki.",
-                    "Postaw na spokojny, etapowy proces odbudowy kontroli zamiast gwałtownych cięć."
-                ],
-                ctaTitle: "Sięgnij po profesjonalne wsparcie już dziś",
-                ctaText: "Przy maksymalnym wyniku w skali CRAVED indywidualna opieka specjalisty jest najlepszym punktem wyjścia do trwałej zmiany. Wejdź na stronę gabinetu i skontaktuj się, aby porozmawiać o pierwszym kroku."
-            }
-        };
-
-        let currentIndex = 0;
-        let answers = [];
-
-        function startQuiz() {
-            currentIndex = 0;
-            answers = [];
-            showScreen("screen-quiz");
-            renderQuestion();
-        }
-
-        function showScreen(screenId) {
-            document.querySelectorAll(".screen").forEach((el) => {
-                el.classList.remove("active");
-            });
-            document.getElementById(screenId).classList.add("active");
-        }
-
-        function currentScore() {
-            return answers.reduce((sum, val) => sum + val, 0);
-        }
-
-        function renderQuestion() {
-            const item = questions[currentIndex];
-            const total = questions.length;
-            const percent = (currentIndex / total) * 100;
-
-            document.getElementById("step-label").textContent = `Pytanie ${currentIndex + 1} z ${total}`;
-            document.getElementById("score-live").textContent = `Aktualny wynik: ${currentScore()} pkt`;
-            document.getElementById("progress-bar").style.width = `${percent}%`;
-            document.getElementById("question-tag").textContent = item.tag;
-            document.getElementById("question-text").textContent = item.text;
-            document.getElementById("btn-prev").disabled = currentIndex === 0;
-        }
-
-        function recordAnswer(points) {
-            answers[currentIndex] = points;
-            if (currentIndex + 1 < questions.length) {
-                currentIndex++;
-                renderQuestion();
-            } else {
-                renderResult();
-                showScreen("screen-result");
-            }
-        }
-
-        function goBack() {
-            if (currentIndex > 0) {
-                currentIndex--;
-                renderQuestion();
-            }
-        }
-
-        function editLastAnswer() {
-            currentIndex = questions.length - 1;
-            showScreen("screen-quiz");
-            renderQuestion();
-        }
-
-        function restartQuiz() {
-            startQuiz();
-        }
-
-        function renderResult() {
-            const totalScore = currentScore();
-            const data = outcomes[totalScore];
-            const circumference = 2 * Math.PI * 40;
-            const offset = circumference - (totalScore / questions.length) * circumference;
-
-            const arc = document.getElementById("score-arc");
-            const badge = document.getElementById("result-badge");
-
-            let strokeColor = "#2e6f40";
-            let badgeClass = "badge badge-low";
-
-            if (data.tier === "mid") {
-                strokeColor = "#b26a00";
-                badgeClass = "badge badge-mid";
-            } else if (data.tier === "high") {
-                strokeColor = "#b83227";
-                badgeClass = "badge badge-high";
-            }
-
-            arc.style.stroke = strokeColor;
-            arc.style.strokeDashoffset = offset;
-            document.getElementById("score-number").textContent = totalScore;
-
-            badge.className = badgeClass;
-            badge.textContent = data.badge;
-
-            document.getElementById("result-heading").textContent = data.heading;
-            document.getElementById("result-analysis").textContent = data.analysis;
-
-            const tipsList = document.getElementById("result-tips");
-            tipsList.innerHTML = "";
-            data.tips.forEach((tip) => {
-                const li = document.createElement("li");
-                li.textContent = tip;
-                tipsList.appendChild(li);
-            });
-
-            document.getElementById("cta-title").textContent = data.ctaTitle;
-            document.getElementById("cta-text").textContent = data.ctaText;
-        }
-    </script>
-</body>
-</html>
+                analysis: "Wynik 0 punktów oznacza, że w badanych obszarach nie występują sygnały kompulsy
