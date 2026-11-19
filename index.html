@@ -52,7 +52,6 @@
             z-index: 2;
         }
 
-        /* Lekki gradient w tle banera */
         .hero {
             position: relative;
             background: linear-gradient(120deg, #1d4a34 0%, #2d6a40 54%, #468637 100%);
@@ -75,7 +74,6 @@
             pointer-events: none;
         }
 
-        /* Lewy panel w banerze na pojedynczą linię wykresu */
         .hero-left-slot {
             display: none;
             position: relative;
@@ -95,9 +93,9 @@
             display: flex;
         }
 
-        .single-wave-svg {
-            width: 72px;
-            height: 54px;
+        .sine-icon-svg {
+            width: 64px;
+            height: 36px;
             display: block;
         }
 
@@ -190,7 +188,6 @@
             line-height: 1.25;
         }
 
-        /* Kadrowanie logo: ukrywa górną część, zostawia awokado i wszystko niżej */
         .logo-crop-box {
             position: relative;
             flex-shrink: 0;
@@ -212,7 +209,7 @@
             display: block;
         }
 
-        /* Rozbudowane krzywe po lewej i prawej stronie (pod spodem / w tle obok karty na kompach) */
+        /* Rozbudowane fale i spirale po lewej i prawej stronie na kompach (pod spodem / w tle obok pola tekstowego) */
         .desktop-waves {
             display: none;
         }
@@ -223,19 +220,19 @@
                 position: fixed;
                 top: 50%;
                 transform: translateY(-50%);
-                width: 280px;
-                height: 460px;
+                width: 340px;
+                height: 520px;
                 pointer-events: none;
                 z-index: 1;
-                opacity: 0.72;
+                opacity: 0.82;
             }
 
             .desktop-waves.left {
-                left: max(12px, calc(50% - 560px));
+                left: max(6px, calc(50% - 610px));
             }
 
             .desktop-waves.right {
-                right: max(12px, calc(50% - 560px));
+                right: max(6px, calc(50% - 610px));
                 transform: translateY(-50%) scaleX(-1);
             }
         }
@@ -628,9 +625,9 @@
                 height: 80px;
                 transform: translateY(-16px);
             }
-            .single-wave-svg {
-                width: 58px;
-                height: 44px;
+            .sine-icon-svg {
+                width: 54px;
+                height: 30px;
             }
             .content {
                 padding: 16px;
@@ -644,15 +641,13 @@
 </head>
 <body>
 
-    <!-- Lewa strona na komputerach: rozbudowany układ falujących krzywych (pod spodem / obok karty) -->
-    <svg id="waves-left" class="desktop-waves left" viewBox="0 0 280 460" fill="none" aria-hidden="true"></svg>
-
-    <!-- Prawa strona na komputerach: symetrycznie rozbudowany układ krzywych -->
-    <svg id="waves-right" class="desktop-waves right" viewBox="0 0 280 460" fill="none" aria-hidden="true"></svg>
+    <!-- Rozbudowany wykres wielu krzywych i spirali po lewej i prawej stronie na kompach -->
+    <svg id="waves-left" class="desktop-waves left" viewBox="0 0 340 520" fill="none" aria-hidden="true"></svg>
+    <svg id="waves-right" class="desktop-waves right" viewBox="0 0 340 520" fill="none" aria-hidden="true"></svg>
 
     <main id="app-shell" class="app-shell">
         <header class="hero">
-            <!-- Strefa 1 (lewa): pojedyncza linia wykresu -->
+            <!-- Strefa 1 (lewa): zawsze ta sama prosta sinusoida -->
             <div id="hero-left-slot" class="hero-left-slot" aria-hidden="true"></div>
 
             <!-- Strefa 2 (środek): treść -->
@@ -787,58 +782,92 @@
     </main>
 
     <script>
-        /* Pojedyncza linia w lewym panelu banera dla każdego kroku i podsumowania */
-        const singleWavePaths = {
-            C: "M4 34 C18 10, 32 48, 46 20 C55 6, 62 38, 68 28",
-            R: "M4 42 C18 36, 28 24, 44 18 C54 14, 62 10, 68 8",
-            A: "M4 28 C18 28, 28 28, 40 28 C50 28, 56 14, 68 14",
-            V: "M4 32 C16 32, 24 12, 36 14 C48 16, 54 38, 68 34",
-            E: "M4 24 C16 44, 24 10, 36 38 C46 18, 56 30, 68 26",
-            D: "M4 20 C18 20, 28 38, 42 36 C54 34, 60 18, 68 22",
-            result: "M4 30 C18 18, 34 42, 50 26 C58 18, 64 28, 68 26"
-        };
+        /* Zwykła, prosta sinusoida — za każdym razem taka sama */
+        const simpleSineSvg = `
+            <svg class="sine-icon-svg" viewBox="0 0 64 36" fill="none">
+                <path d="M2 18 C10 4, 18 4, 26 18 C34 32, 42 32, 50 18 C55 10, 59 10, 62 18" stroke="#e7fad8" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+            </svg>
+        `;
 
-        function renderSingleWave(key) {
-            const d = singleWavePaths[key] || singleWavePaths.result;
-            return `
-                <svg class="single-wave-svg" viewBox="0 0 72 54" fill="none">
-                    <path d="${d}" stroke="#e7fad8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            `;
-        }
+        /* Rozbudowana kompozycja fal i spirali inspirowana załączoną grafiką */
+        function buildSpiralWaveSvg(phaseShift = 0) {
+            let svgParts = [];
 
-        /* Rozbudowany wykres wielu krzywych na komputery po lewej i prawej stronie */
-        function buildMultiWaveSvg(phaseShift = 0) {
-            let paths = "";
-            const totalCurves = 14;
-            for (let i = 0; i < totalCurves; i++) {
-                const t = i / (totalCurves - 1);
-                const baseY = 65 + i * 22;
-                const amp1 = 28 + Math.sin(t * Math.PI) * 34;
-                const amp2 = 18 + Math.cos(t * Math.PI * 1.4) * 24;
-                const shift = (i - 6) * 7 + phaseShift;
-
-                const p1x = 110 + shift;
-                const p1y = baseY - amp1;
-                const p2x = 185 - shift * 0.6;
-                const p2y = baseY + amp2;
-                const endX = 275;
-                const endY = baseY - amp1 * 0.35 + (i - 6) * 4;
-
-                const opacity = (0.16 + (1 - Math.abs(t - 0.5) * 1.5) * 0.42).toFixed(2);
-                const strokeColor = i % 2 === 0 ? "#2e6f40" : "#4c8c2b";
-                const width = i === 6 || i === 7 ? "1.6" : "1.1";
-
-                paths += `<path d="M-10 ${baseY} C 55 ${p1y}, ${p1x} ${p1y}, 145 ${baseY} S ${p2x} ${p2y}, ${endX} ${endY}" stroke="${strokeColor}" stroke-width="${width}" stroke-opacity="${opacity}" fill="none"/>`;
+            /* Centralna oś i drobne pionowe znaczniki w tle */
+            svgParts.push(`<line x1="0" y1="260" x2="340" y2="260" stroke="#4c8c2b" stroke-width="0.7" stroke-opacity="0.28"/>`);
+            for (let gx = 24; gx < 330; gx += 28) {
+                svgParts.push(`<line x1="${gx}" y1="226" x2="${gx}" y2="294" stroke="#2e6f40" stroke-width="0.6" stroke-opacity="0.2"/>`);
             }
-            return paths;
+
+            /* Pakiet falujących krzywych przechodzących w spirale */
+            const strands = 24;
+            for (let i = 0; i < strands; i++) {
+                const k = (i / (strands - 1)) - 0.5; /* -0.5 .. +0.5 */
+                const spread = k * 46 + phaseShift;
+
+                const startY = 260 + k * 54;
+                const cp1x = 95 + spread * 0.4;
+                const cp1y = 110 + k * 72;
+                const midX = 175;
+                const midY = 260 + k * 28;
+                const cp2x = 255 - spread * 0.35;
+                const cp2y = 405 - k * 64;
+                const endX = 335;
+                const endY = 235 + k * 82;
+
+                const strokeColor = i % 3 === 0 ? "#2e6f40" : (i % 3 === 1 ? "#4c8c2b" : "#68b847");
+                const opacity = (0.22 + (1 - Math.abs(k) * 1.4) * 0.45).toFixed(2);
+                const width = Math.abs(k) < 0.12 ? "1.45" : "0.95";
+
+                svgParts.push(
+                    `<path d="M -5 ${startY} C ${cp1x} ${cp1y}, ${midX - 45} ${midY - 68}, ${midX} ${midY} C ${midX + 45} ${midY + 68}, ${cp2x} ${cp2y}, ${endX} ${endY}" stroke="${strokeColor}" stroke-width="${width}" stroke-opacity="${opacity}" fill="none"/>`
+                );
+            }
+
+            /* Spirale po lewej i prawej stronie kompozycji */
+            const spirals = [
+                { cx: 118, cy: 215, maxR: 54, turns: 2.3, color: "#4c8c2b", opacity: "0.52" },
+                { cx: 238, cy: 305, maxR: 62, turns: 2.5, color: "#2e6f40", opacity: "0.55" }
+            ];
+
+            spirals.forEach((sp, sIdx) => {
+                for (let layer = 0; layer < 5; layer++) {
+                    const scale = 0.72 + layer * 0.11;
+                    let d = "";
+                    const steps = 64;
+                    for (let step = 0; step <= steps; step++) {
+                        const t = step / steps;
+                        const angle = t * sp.turns * Math.PI * 2 + layer * 0.18 + phaseShift * 0.02 * (sIdx === 0 ? 1 : -1);
+                        const r = t * sp.maxR * scale;
+                        const x = sp.cx + Math.cos(angle) * r;
+                        const y = sp.cy + Math.sin(angle) * r;
+                        d += (step === 0 ? "M " : " L ") + `${x.toFixed(1)} ${y.toFixed(1)}`;
+                    }
+                    svgParts.push(
+                        `<path d="${d}" stroke="${sp.color}" stroke-width="${layer === 2 ? "1.3" : "0.85"}" stroke-opacity="${sp.opacity}" fill="none"/>`
+                    );
+                }
+            });
+
+            /* Drobne punkty i kwadraciki dekoracyjne */
+            const accents = [
+                `<circle cx="64" cy="142" r="2.2" fill="#4c8c2b" fill-opacity="0.45"/>`,
+                `<circle cx="192" cy="128" r="1.8" fill="#2e6f40" fill-opacity="0.4"/>`,
+                `<circle cx="284" cy="186" r="2.5" fill="#68b847" fill-opacity="0.45"/>`,
+                `<circle cx="152" cy="396" r="2" fill="#2e6f40" fill-opacity="0.4"/>`,
+                `<rect x="86" y="344" width="6" height="6" fill="#4c8c2b" fill-opacity="0.32"/>`,
+                `<rect x="262" y="138" width="5" height="5" fill="#2e6f40" fill-opacity="0.3"/>`
+            ];
+            svgParts.push(...accents);
+
+            return svgParts.join("");
         }
 
         function updateDesktopWaves(stepIndex = 0) {
-            const shift = (stepIndex - 2.5) * 4;
-            const svgContent = buildMultiWaveSvg(shift);
-            document.getElementById("waves-left").innerHTML = svgContent;
-            document.getElementById("waves-right").innerHTML = svgContent;
+            const shift = (stepIndex - 2.5) * 3.5;
+            const content = buildSpiralWaveSvg(shift);
+            document.getElementById("waves-left").innerHTML = content;
+            document.getElementById("waves-right").innerHTML = content;
         }
 
         const questions = [
@@ -880,8 +909,8 @@
             {
                 letter: "D",
                 en: "Damage despite awareness",
-                pl: "Szkody mimo wiedzy",
-                tag: "D • Szkody mimo wiedzy",
+                pl: "Szkody pomimo świadomości",
+                tag: "D • Szkody pomimo świadomości",
                 text: "Czy kontynuujesz jedzenie tych produktów, mimo świadomości, że odbija się to niekorzystnie na Twoim zdrowiu, samopoczuciu, śnie lub masie ciała?"
             }
         ];
@@ -984,9 +1013,10 @@
 
             if (mode === "quiz") {
                 shell.classList.add("quiz-active", "three-zone-hero");
+                leftSlot.innerHTML = simpleSineSvg;
             } else if (mode === "result") {
                 shell.classList.add("result-active", "three-zone-hero");
-                leftSlot.innerHTML = renderSingleWave("result");
+                leftSlot.innerHTML = simpleSineSvg;
                 updateDesktopWaves(6);
             } else {
                 leftSlot.innerHTML = "";
@@ -1030,7 +1060,7 @@
             const percent = (currentIndex / total) * 100;
 
             renderCravedBanner(item.letter);
-            document.getElementById("hero-left-slot").innerHTML = renderSingleWave(item.letter);
+            document.getElementById("hero-left-slot").innerHTML = simpleSineSvg;
             document.getElementById("step-en").textContent = `${item.letter} – ${item.en}`;
             document.getElementById("step-pl").textContent = item.pl;
             updateDesktopWaves(currentIndex);
